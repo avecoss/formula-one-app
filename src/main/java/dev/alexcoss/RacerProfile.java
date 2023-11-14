@@ -1,23 +1,18 @@
 package dev.alexcoss;
 
 import java.time.Duration;
-import java.time.LocalDateTime;
 import java.util.Objects;
 
 public class RacerProfile {
     private final String abbreviations;
     private final String fullName;
     private final String description;
-    private final LocalDateTime startTime;
-    private final LocalDateTime finishTime;
     private final Duration bestLapTime;
 
-    public RacerProfile(String abbreviations, String fullName, String description, LocalDateTime startTime, LocalDateTime finishTime, Duration bestLapTime) {
+    public RacerProfile(String abbreviations, String fullName, String description, Duration bestLapTime) {
         this.abbreviations = abbreviations;
         this.fullName = fullName;
         this.description = description;
-        this.startTime = startTime;
-        this.finishTime = finishTime;
         this.bestLapTime = bestLapTime;
     }
 
@@ -31,14 +26,6 @@ public class RacerProfile {
 
     public String getDescription() {
         return description;
-    }
-
-    public LocalDateTime getStartTime() {
-        return startTime;
-    }
-
-    public LocalDateTime getFinishTime() {
-        return finishTime;
     }
 
     public Duration getBestLapTime() {
@@ -56,13 +43,12 @@ public class RacerProfile {
         if (o == null || getClass() != o.getClass()) return false;
         RacerProfile that = (RacerProfile) o;
         return Objects.equals(abbreviations, that.abbreviations) && Objects.equals(fullName, that.fullName)
-            && Objects.equals(description, that.description) && Objects.equals(startTime, that.startTime)
-            && Objects.equals(finishTime, that.finishTime) && Objects.equals(bestLapTime, that.bestLapTime);
+            && Objects.equals(description, that.description) && Objects.equals(bestLapTime, that.bestLapTime);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(abbreviations, fullName, description, startTime, finishTime, bestLapTime);
+        return Objects.hash(abbreviations, fullName, description, bestLapTime);
     }
 
     private String formattedBestLapTime() {

@@ -2,9 +2,7 @@ package dev.alexcoss;
 
 import org.junit.jupiter.api.Test;
 
-import java.time.Duration;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -21,6 +19,7 @@ class RacersTest {
         List<RacerProfile> racersList = racers.getRacersList();
         assertNotNull(racersList);
     }
+
     @Test
     void shouldReturnTheSameSize() {
         List<RacerProfile> racersList = racers.getRacersList();
@@ -32,10 +31,9 @@ class RacersTest {
         List<RacerProfile> racersList = racers.getRacersList();
         RacerProfile profileFromList = racersList.get(0);
 
-        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH:mm:ss.SSS");
-        LocalDateTime start = LocalDateTime.parse("2018-05-24_12:12:12.222", dtf);
-        LocalDateTime finish = LocalDateTime.parse("2018-05-24_12:12:12.223", dtf);
-        RacerProfile expected = new RacerProfile("ABC", "NAME SURNAME", "CAR", start, finish, Duration.between(start, finish));
+        LocalDateTime start = TimeConverter.convertStringToLocalDateTime("2018-05-24_12:12:12.222");
+        LocalDateTime finish = TimeConverter.convertStringToLocalDateTime("2018-05-24_12:12:12.223");
+        RacerProfile expected = new RacerProfile("ABC", "NAME SURNAME", "CAR", TimeConverter.calculateTimeDifference(start,finish));
 
         assertEquals(expected, profileFromList);
     }

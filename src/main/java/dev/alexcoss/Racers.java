@@ -2,7 +2,6 @@ package dev.alexcoss;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -13,7 +12,6 @@ public class Racers {
     private static final String REGEX_SEPARATOR = "_";
 
     private final List<RacerProfile> racersList;
-    private final ResourceUtils resourceUtils = new ResourceUtils();
 
     public Racers(String abbreviationsPath, String startPath, String endPath) {
         racersList = initializeRacersList(abbreviationsPath, startPath, endPath);
@@ -30,6 +28,7 @@ public class Racers {
     }
 
     private List<RacerProfile> initializeRacersList(String abbreviationsPath, String startPath, String endPath) {
+        ResourceUtils resourceUtils = new ResourceUtils();
         return resourceUtils.fileRead(abbreviationsPath, bufferedReader -> bufferedReader.lines()
             .map(line -> createRacerProfile(line, startPath, endPath))
             .sorted(Comparator.comparing(RacerProfile::getBestLapTime))
@@ -38,14 +37,38 @@ public class Racers {
 
     private RacerProfile createRacerProfile(String line, String startPath, String endPath) {
         String[] data = line.split(REGEX_SEPARATOR);
-        String abbr = data[0];
-        String name = data[1];
-        String des = data[2];
-        LocalDateTime startTime = getTime(startPath, abbr);
-        LocalDateTime finishTime = getTime(endPath, abbr);
-        Duration lapTime = Duration.between(startTime, finishTime);
+        int expectedFields = 3;
 
-        return new RacerProfile(abbr, name, des, startTime, finishTime, lapTime);
+        String abbreviation = "empty";
+        String name = "empty";
+        String description = "empty";
+        Duration lapTime = Duration.ZERO;
+
+        if (data.length == expectedFields) {
+            abbreviation = data[0];
+            name = data[1];
+            description = data[2];
+
+            LocalDateTime start = getTime(abbreviation, startPath);
+            LocalDateTime finish = getTime(abbreviation, endPath);
+
+            if (!start.equals(LocalDateTime.MIN) && !finish.equals(LocalDateTime.MIN)) {
+                lapTime = TimeConverter.calculateTimeDifference(start, finish);
+            }else {
+                System.out.println("Time error!");
+            }
+        }
+        return new RacerProfile(abbreviation, name, description, lapTime);
+    }
+
+    private LocalDateTime getTime(String abbreviation, String path) {
+        ResourceUtils resourceUtils = new ResourceUtils();
+        return resourceUtils.fileRead(path, bufferedReader -> bufferedReader.lines()
+            .filter(line -> line.startsWith(abbreviation))
+            .map(line -> line.substring(abbreviation.length()))
+            .map(TimeConverter::convertStringToLocalDateTime)
+            .findFirst()
+            .orElse(LocalDateTime.MIN));
     }
 
     private void printWinningRacers() {
@@ -58,14 +81,5 @@ public class Racers {
         racersList.stream()
             .skip(LIMIT)
             .forEach(System.out::println);
-    }
-
-    private LocalDateTime getTime(String path, String abbreviation) {
-        return resourceUtils.fileRead(path, bufferedReader -> bufferedReader.lines()
-            .filter(line -> line.startsWith(abbreviation))
-            .map(line -> line.substring(abbreviation.length()))
-            .map(time -> LocalDateTime.parse(time, DateTimeFormatter.ofPattern("yyyy-MM-dd_HH:mm:ss.SSS")))
-            .findFirst()
-            .orElse(LocalDateTime.now()));
     }
 }
