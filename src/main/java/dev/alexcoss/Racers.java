@@ -1,15 +1,21 @@
 package dev.alexcoss;
 
+import dev.alexcoss.properties.ColorScheme;
+
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Scanner;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class Racers {
     private static final int LIMIT = 15;
     private static final int NUMBER_OF_REPEATS = 40;
     private static final String REGEX_SEPARATOR = "_";
+    private static final String EMPTY_STRING = "empty";
 
     private final List<RacerProfile> racersList;
 
@@ -31,34 +37,52 @@ public class Racers {
         ResourceUtils resourceUtils = new ResourceUtils();
         return resourceUtils.fileRead(abbreviationsPath, bufferedReader -> bufferedReader.lines()
             .map(line -> createRacerProfile(line, startPath, endPath))
+            .filter(this::isValidRacer)
             .sorted(Comparator.comparing(RacerProfile::getBestLapTime))
             .collect(Collectors.toList()));
     }
 
     private RacerProfile createRacerProfile(String line, String startPath, String endPath) {
-        String[] data = line.split(REGEX_SEPARATOR);
-        int expectedFields = 3;
+        RacerProfile racerProfile = new RacerProfile();
 
-        String abbreviation = "empty";
-        String name = "empty";
-        String description = "empty";
-        Duration lapTime = Duration.ZERO;
+        try (Scanner scanner = new Scanner(line)) {
+            scanner.useDelimiter(REGEX_SEPARATOR);
 
-        if (data.length == expectedFields) {
-            abbreviation = data[0];
-            name = data[1];
-            description = data[2];
-
-            LocalDateTime start = getTime(abbreviation, startPath);
-            LocalDateTime finish = getTime(abbreviation, endPath);
-
-            if (!start.equals(LocalDateTime.MIN) && !finish.equals(LocalDateTime.MIN)) {
-                lapTime = TimeConverter.calculateTimeDifference(start, finish);
-            }else {
-                System.out.println("Time error!");
-            }
+            setField(scanner, racerProfile::setAbbreviations, "abbreviations");
+            setField(scanner, racerProfile::setFullName, "full name");
+            setField(scanner, racerProfile::setDescription, "description");
+        } catch (NoSuchElementException e) {
+            printErrorMessage("Error: Invalid field");
         }
-        return new RacerProfile(abbreviation, name, description, lapTime);
+
+        Duration lapTime = calculateLapTime(racerProfile.getAbbreviations(), startPath, endPath);
+        racerProfile.setBestLapTime(lapTime);
+
+        return racerProfile;
+    }
+
+    private void setField(Scanner scanner, Consumer<String> setter, String fieldName) {
+        if (scanner.hasNext())
+            setter.accept(scanner.next());
+        else {
+            setter.accept(EMPTY_STRING);
+            printErrorMessage("Error: Invalid field " + fieldName);
+        }
+    }
+
+    private Duration calculateLapTime(String abbreviation, String startPath, String endPath) {
+        if (EMPTY_STRING.equalsIgnoreCase(abbreviation))
+            return Duration.ZERO;
+
+        LocalDateTime start = getTime(abbreviation, startPath);
+        LocalDateTime finish = getTime(abbreviation, endPath);
+
+        if (!start.equals(LocalDateTime.MIN) && !finish.equals(LocalDateTime.MIN)) {
+            return TimeConverter.calculateTimeDifference(start, finish);
+        } else {
+            printErrorMessage("Error: Incorrect time calculated");
+            return Duration.ZERO;
+        }
     }
 
     private LocalDateTime getTime(String abbreviation, String path) {
@@ -71,6 +95,13 @@ public class Racers {
             .orElse(LocalDateTime.MIN));
     }
 
+    private boolean isValidRacer(RacerProfile racer) {
+        return !racer.getAbbreviations().equalsIgnoreCase(EMPTY_STRING) &&
+            !racer.getFullName().equalsIgnoreCase(EMPTY_STRING) &&
+            !racer.getDescription().equalsIgnoreCase(EMPTY_STRING) &&
+            racer.getBestLapTime().compareTo(Duration.ZERO) > 0;
+    }
+
     private void printWinningRacers() {
         racersList.stream()
             .limit(LIMIT)
@@ -81,5 +112,9 @@ public class Racers {
         racersList.stream()
             .skip(LIMIT)
             .forEach(System.out::println);
+    }
+
+    private void printErrorMessage(String message) {
+        System.out.println(ColorScheme.RED.getColor() + message + ColorScheme.DEFAULT.getColor());
     }
 }

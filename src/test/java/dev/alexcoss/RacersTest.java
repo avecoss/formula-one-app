@@ -33,7 +33,12 @@ class RacersTest {
 
         LocalDateTime start = TimeConverter.convertStringToLocalDateTime("2018-05-24_12:12:12.222");
         LocalDateTime finish = TimeConverter.convertStringToLocalDateTime("2018-05-24_12:12:12.223");
-        RacerProfile expected = new RacerProfile("ABC", "NAME SURNAME", "CAR", TimeConverter.calculateTimeDifference(start,finish));
+
+        RacerProfile expected = new RacerProfile();
+        expected.setAbbreviations("ABC");
+        expected.setFullName("NAME SURNAME");
+        expected.setDescription("CAR");
+        expected.setBestLapTime(TimeConverter.calculateTimeDifference(start,finish));
 
         assertEquals(expected, profileFromList);
     }

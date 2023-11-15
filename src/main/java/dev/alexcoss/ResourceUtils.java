@@ -1,5 +1,7 @@
 package dev.alexcoss;
 
+import dev.alexcoss.exceptions.FileReadException;
+
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -13,17 +15,13 @@ public class ResourceUtils {
 
         boolean fileNotExists = Files.notExists(path);
         if (fileNotExists) {
-            throw new RuntimeException("File \"" + fileName + "\" not found");
+            throw new FileReadException("File not found " + fileName);
         }
 
-        try (InputStream inStream = Files.newInputStream(path);
-             Reader reader = new InputStreamReader(inStream);
-             BufferedReader bufferedReader = new BufferedReader(reader)) {
-
+        try (BufferedReader bufferedReader = Files.newBufferedReader(path)) {
             return function.apply(bufferedReader);
-
         } catch (IOException e) {
-            throw new RuntimeException("Unable to read file " + fileName, e);
+            throw new FileReadException("Unable to read file " + fileName, e);
         }
     }
 }

@@ -1,5 +1,7 @@
 package dev.alexcoss;
 
+import dev.alexcoss.properties.ColorScheme;
+
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -13,7 +15,7 @@ public class TimeConverter {
         try {
             convertedTime = LocalDateTime.parse(time, DateTimeFormatter.ofPattern(FORMATTER));
         } catch (DateTimeParseException e) {
-            System.out.println("Conversion error!");
+            System.out.println(ColorScheme.RED.getColor() + "Error: Time conversion error" + ColorScheme.DEFAULT.getColor());
         }
         return convertedTime;
     }

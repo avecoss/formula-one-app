@@ -4,17 +4,10 @@ import java.time.Duration;
 import java.util.Objects;
 
 public class RacerProfile {
-    private final String abbreviations;
-    private final String fullName;
-    private final String description;
-    private final Duration bestLapTime;
-
-    public RacerProfile(String abbreviations, String fullName, String description, Duration bestLapTime) {
-        this.abbreviations = abbreviations;
-        this.fullName = fullName;
-        this.description = description;
-        this.bestLapTime = bestLapTime;
-    }
+    private String abbreviations;
+    private String fullName;
+    private String description;
+    private Duration bestLapTime;
 
     public String getAbbreviations() {
         return abbreviations;
@@ -30,6 +23,22 @@ public class RacerProfile {
 
     public Duration getBestLapTime() {
         return bestLapTime;
+    }
+
+    public void setAbbreviations(String abbreviations) {
+        this.abbreviations = abbreviations;
+    }
+
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public void setBestLapTime(Duration bestLapTime) {
+        this.bestLapTime = bestLapTime;
     }
 
     @Override
